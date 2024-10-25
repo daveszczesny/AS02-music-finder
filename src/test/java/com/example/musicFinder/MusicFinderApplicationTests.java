@@ -17,6 +17,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest
@@ -47,7 +49,7 @@ class MusicFinderApplicationTests {
 
 		assertNotNull(expectedLyrics, "Lyrics file not found");
 
-		// // Simulate API JSON response with the lyrics field
+		// Simulate API JSON response with the lyrics field
 		String mockApiResponse = objectMapper
 				.writeValueAsString(objectMapper.createObjectNode().put("lyrics", expectedLyrics));
 
@@ -60,7 +62,7 @@ class MusicFinderApplicationTests {
 		ObjectNode response = responseEntity.getBody();
 
 		// Assert
-		assertEquals(200, responseEntity.getStatusCode());
+		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(artist, response.get("artist").asText());
 		assertEquals(song, response.get("song").asText());
 		assertEquals(expectedLyrics, response.get("lyrics").asText());
@@ -81,7 +83,7 @@ class MusicFinderApplicationTests {
 		ObjectNode response = responseForInvalidArtist.getBody();
 
 		// Assert for invalid artist
-		assertEquals(404, responseForInvalidArtist.getStatusCode());
+		assertEquals(HttpStatus.NOT_FOUND, responseForInvalidArtist.getStatusCode());
 		assertEquals(expectedError, response.get("error").asText());
 
 		// Act - Call the controller method with an invalid song
@@ -89,7 +91,7 @@ class MusicFinderApplicationTests {
 		ObjectNode responseForInvalidSongBody = responseForInvalidSong.getBody();
 
 		// Assert - Check error response for song not found
-		assertEquals(404, responseForInvalidSong.getStatusCode());
+		assertEquals(HttpStatus.NOT_FOUND, responseForInvalidSong.getStatusCode());
 		assertEquals(expectedError, responseForInvalidSongBody.get("error").asText());
 	}
 }

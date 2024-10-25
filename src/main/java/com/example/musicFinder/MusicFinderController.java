@@ -23,19 +23,12 @@ public class MusicFinderController {
 
     private String getFormattedLyrics(String artist, String song) {
 
-        String formattedArtist = artist.replaceAll(" ", "%20");
-        String formattedSong = song.replaceAll(" ", "%20");
-
-        String apiUrl = "https://api.lyrics.ovh/v1/" + formattedArtist + "/" + formattedSong;
+        String apiUrl = "https://api.lyrics.ovh/v1/" + artist + "/" + song;
         try {
 
-            System.out.println("apiUrl: " + apiUrl);
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
-            System.out.println("rawJson: " + rawJson);
             JsonNode jsonNode = objectMapper.readTree(rawJson);
             String rawLyrics = jsonNode.get("lyrics").asText();
-
-            System.out.println("rawLyrics: " + rawLyrics);
             return rawLyrics.replaceAll("\\r", "").replaceAll("\\n+", "<br>").trim();
         } catch (Exception e) {
             throw new RuntimeException("Artist or song not found");
