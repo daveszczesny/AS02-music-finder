@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.http.ResponseEntity;
 
 @SpringBootTest
 class MusicFinderApplicationTests {
@@ -48,17 +49,44 @@ class MusicFinderApplicationTests {
 				.writeValueAsString(objectMapper.createObjectNode().put("lyrics", expectedLyrics));
 
 		// Mocking the RestTemplate call to return the expected JSON response
-		when(restTemplate.getForObject("https://api.lyrics.ovh/v1/Taylor Swift/Love Story", String.class))
+		when(restTemplate.getForObject("https://api.lyrics.ovh/v1/" + artist + "/" + song + "", String.class))
 				.thenReturn(mockApiResponse);
 
 		// Act
-		ObjectNode response = musicFinderController.getSongDetails(artist, song);
+		ResponseEntity<ObjectNode> responseEntity = musicFinderController.getSongDetails(artist, song);
+		ObjectNode response = responseEntity.getBody();
 
 		// Assert
+		assertEquals(200, responseEntity.getStatusCodeValue());
 		assertEquals(artist, response.get("artist").asText());
 		assertEquals(song, response.get("song").asText());
 		assertEquals(expectedLyrics, response.get("lyrics").asText());
 		assertTrue(response.get("youtubeSearch").asText()
 				.contains("https://www.youtube.com/results?search_query=Taylor+Swift+Love+Story"));
+	}
+
+	@Test
+	void testUnitIncorrectInputs() throws RestClientException, IOException {
+		String invalidArtist = "Unknown Artist";
+		String song = "Love Story";
+		String artist = "Taylor Swift";
+		String invalidSong = "Unknown Song";
+		String expectedError = "Artist or song not found";
+
+		// Act - Call the controller method with an invalid artist
+		ResponseEntity<ObjectNode> responseForInvalidArtist = musicFinderController.getSongDetails(invalidArtist, song);
+		ObjectNode response = responseForInvalidArtist.getBody();
+
+		// Assert for invalid artist
+		assertEquals(404, responseForInvalidArtist.getStatusCodeValue());
+		assertEquals(expectedError, response.get("error").asText());
+
+		// Act - Call the controller method with an invalid song
+		ResponseEntity<ObjectNode> responseForInvalidSong = musicFinderController.getSongDetails(artist, invalidSong);
+		ObjectNode responseForInvalidSongBody = responseForInvalidSong.getBody();
+
+		// Assert - Check error response for song not found
+		assertEquals(404, responseForInvalidSong.getStatusCodeValue());
+		assertEquals(expectedError, responseForInvalidSongBody.get("error").asText());
 	}
 }
