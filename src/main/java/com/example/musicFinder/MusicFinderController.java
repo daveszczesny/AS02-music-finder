@@ -36,11 +36,7 @@ public class MusicFinderController {
                 throw new IllegalArgumentException("Invalid input");
             }
 
-            String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
-                    .path(artist)
-                    .path("/")
-                    .path(song)
-                    .toUriString();
+            String apiUrl = API_ENDPOINT + artist + "/" + song;
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
             JsonNode jsonNode = objectMapper.readTree(rawJson);
