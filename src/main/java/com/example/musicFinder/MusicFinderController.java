@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.exception.ArtistOrSongNotFoundException;
 
@@ -27,9 +28,18 @@ public class MusicFinderController {
     }
 
     private String getFormattedLyrics(String artist, String song) throws ArtistOrSongNotFoundException {
-
-        String apiUrl = API_ENDPOINT + artist + "/" + song;
         try {
+
+            String userInput = artist + "/" + song;
+
+            if(!isValidInput(userInput)) {
+                throw new IllegalArgumentException("Invalid input");
+            }
+
+            String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
+                    .path(userInput)
+                    .build()
+                    .toUriString();
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
             JsonNode jsonNode = objectMapper.readTree(rawJson);
@@ -65,5 +75,11 @@ public class MusicFinderController {
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Return 404 Not Found
         }
+    }
+
+
+    private boolean isValidInput(String input) {
+        // Check if the input contains only alphanumeric characters and spaces
+        return input.matches("^[a-zA-Z0-9\\s]+$");
     }
 }
