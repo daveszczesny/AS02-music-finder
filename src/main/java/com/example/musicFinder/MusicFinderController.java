@@ -1,4 +1,4 @@
-package com.example.musicFinder;
+package com.example.musicfinder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,34 +10,44 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.exception.ArtistOrSongNotFoundException;
+
 @RestController
 public class MusicFinderController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private static final String API_ENDPOINT = "https://api.lyrics.ovh/v1/";
+    private static final String YOUTUBE_SEARCH_URL = "https://www.youtube.com/results?search_query=";
+
     @GetMapping("/status")
     public String getStatus() {
         return "{\"status\":\"Application is running\"}";
     }
 
-    private String getFormattedLyrics(String artist, String song) {
+    private String getFormattedLyrics(String artist, String song) throws ArtistOrSongNotFoundException {
 
-        String apiUrl = "https://api.lyrics.ovh/v1/" + artist + "/" + song;
+        String apiUrl = API_ENDPOINT + artist + "/" + song;
         try {
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
             JsonNode jsonNode = objectMapper.readTree(rawJson);
             String rawLyrics = jsonNode.get("lyrics").asText();
-            return rawLyrics.replaceAll("\\r", "").replaceAll("\\n+", "<br>").trim();
+            
+            String formattedLyrics = rawLyrics.replaceAll("\\r", "");
+            formattedLyrics = formattedLyrics.replaceAll("\\n+", "<br>");
+
+            return formattedLyrics.trim();
+
         } catch (Exception e) {
-            throw new RuntimeException("Artist or song not found");
+            throw new ArtistOrSongNotFoundException("Artist or song not found");
         }
     }
 
     private String getYouTubeSearchUrl(String artist, String song) {
         String searchQuery = artist.replace(" ", "+") + "+" + song.replace(" ", "+");
-        return "https://www.youtube.com/results?search_query=" + searchQuery;
+        return YOUTUBE_SEARCH_URL + searchQuery;
     }
 
     @GetMapping("/song/{artist}/{name}")
@@ -51,7 +61,7 @@ public class MusicFinderController {
             String lyrics = getFormattedLyrics(artist, name);
             response.put("lyrics", lyrics);
             return ResponseEntity.ok(response); // Return 200 OK
-        } catch (RuntimeException e) {
+        } catch (ArtistOrSongNotFoundException e) {
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Return 404 Not Found
         }

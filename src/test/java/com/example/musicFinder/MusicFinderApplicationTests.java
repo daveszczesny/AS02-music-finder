@@ -1,4 +1,4 @@
-package com.example.musicFinder;
+package com.example.musicfinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,7 +15,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.example.musicfinder.MusicFinderController;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.springframework.http.HttpStatus;
@@ -30,34 +31,33 @@ class MusicFinderApplicationTests {
 	@Mock
 	private RestTemplate restTemplate;
 
-	private ObjectMapper objectMapper;
+	private static final String API_ENDPOINT = "https://api.lyrics.ovh/v1/";
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
-		objectMapper = new ObjectMapper();
 	}
 
 	@Test
 	void testUnitCorrectLyrics() throws RestClientException, IOException {
 		String artist = "Taylor Swift";
 		String song = "Love Story";
+		String youtubeSearch = "https://www.youtube.com/results?search_query=Taylor+Swift+Love+Story";
 
 		// Read expected lyrics from the file
-		Path filePath = Path.of("src/test/resources/data/lyrics.txt");
-		String expectedLyrics = Files.readString(filePath).replaceAll("\\r", "").replaceAll("\\n+", "<br>");
+		Path rawLyricsFilePath = Path.of("src/test/resources/data/lyrics.txt");
+		Path expectedLyricsFilePath = Path.of("src/test/resources/data/expectedLyrics.txt");
+		String rawLyrics = Files.readString(rawLyricsFilePath);
+		String expectedLyrics = Files.readString(expectedLyricsFilePath);
 
 		assertNotNull(expectedLyrics, "Lyrics file not found");
 
-		// Simulate API JSON response with the lyrics field
-		String mockApiResponse = objectMapper
-				.writeValueAsString(objectMapper.createObjectNode().put("lyrics", expectedLyrics));
+		// Mocking the API to return our lyrics
 
-		// Mocking the RestTemplate call to return the expected JSON response
-		when(restTemplate.getForObject("https://api.lyrics.ovh/v1/" + artist + "/" + song, String.class))
-				.thenReturn(mockApiResponse);
+		String apiUrl = API_ENDPOINT + artist + "/" + song;
+		when(restTemplate.getForObject(apiUrl, String.class)).thenReturn(rawLyrics);
 
-		// Act
+		// Call the controller method
 		ResponseEntity<ObjectNode> responseEntity = musicFinderController.getSongDetails(artist, song);
 		ObjectNode response = responseEntity.getBody();
 
@@ -66,19 +66,19 @@ class MusicFinderApplicationTests {
 		assertEquals(artist, response.get("artist").asText());
 		assertEquals(song, response.get("song").asText());
 		assertEquals(expectedLyrics, response.get("lyrics").asText());
-		assertTrue(response.get("youtubeSearch").asText()
-				.contains("https://www.youtube.com/results?search_query=Taylor+Swift+Love+Story"));
+		assertTrue(response.get("youtubeSearch").asText().contains(youtubeSearch));
+	
 	}
 
 	@Test
-	void testUnitIncorrectInputs() throws RestClientException, IOException {
+	void testUnitIncorrectInputs() throws RestClientException {
 		String invalidArtist = "Unknown Artist";
 		String song = "Love Story";
 		String artist = "Taylor Swift";
 		String invalidSong = "Unknown Song";
 		String expectedError = "Artist or song not found";
 
-		// Act - Call the controller method with an invalid artist
+		// Call the controller method with an invalid artist
 		ResponseEntity<ObjectNode> responseForInvalidArtist = musicFinderController.getSongDetails(invalidArtist, song);
 		ObjectNode response = responseForInvalidArtist.getBody();
 
@@ -86,7 +86,7 @@ class MusicFinderApplicationTests {
 		assertEquals(HttpStatus.NOT_FOUND, responseForInvalidArtist.getStatusCode());
 		assertEquals(expectedError, response.get("error").asText());
 
-		// Act - Call the controller method with an invalid song
+		// Call the controller method with an invalid song
 		ResponseEntity<ObjectNode> responseForInvalidSong = musicFinderController.getSongDetails(artist, invalidSong);
 		ObjectNode responseForInvalidSongBody = responseForInvalidSong.getBody();
 
@@ -94,4 +94,5 @@ class MusicFinderApplicationTests {
 		assertEquals(HttpStatus.NOT_FOUND, responseForInvalidSong.getStatusCode());
 		assertEquals(expectedError, responseForInvalidSongBody.get("error").asText());
 	}
+
 }
