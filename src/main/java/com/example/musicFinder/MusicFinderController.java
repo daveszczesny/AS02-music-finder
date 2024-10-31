@@ -37,8 +37,9 @@ public class MusicFinderController {
             }
 
             String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
-                    .pathSegment(artist, song)
-                    .build()
+                    .path(artist)
+                    .path("/")
+                    .path(song)
                     .toUriString();
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
