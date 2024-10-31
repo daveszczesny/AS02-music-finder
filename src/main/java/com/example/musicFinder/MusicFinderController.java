@@ -37,7 +37,7 @@ public class MusicFinderController {
             }
 
             String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
-                    .path(userInput)
+                    .pathSegment(artist, song)
                     .build()
                     .toUriString();
 
