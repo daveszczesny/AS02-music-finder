@@ -40,14 +40,10 @@ public class MusicFinderController {
                 .toUriString();
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
-
             JsonNode jsonNode = objectMapper.readTree(rawJson);
             String rawLyrics = jsonNode.get("lyrics").asText();
-            
-            String formattedLyrics = rawLyrics.replace("\r", "");
-            formattedLyrics = formattedLyrics.replaceAll("\\n+", "<br>");
 
-            return formattedLyrics.trim();
+            return formatLyrics(rawLyrics);
 
         }catch (Exception e) {
             throw new ArtistOrSongNotFoundException("Artist or song not found");
@@ -75,8 +71,8 @@ public class MusicFinderController {
                 response.put("error", "API forbidden");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response); // Return 403 Forbidden
             } else {
-                response.put("error", "Some fucking error");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Return 404 Not Found
+                response.put("error", "Unknown http error");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
         }
         catch (ArtistOrSongNotFoundException e) {
@@ -90,6 +86,10 @@ public class MusicFinderController {
         // Check if the input contains only alphanumeric characters and spaces
         String regex = "^[a-zA-Z0-9\\s]+$";
         return artist.matches(regex) && song.matches(regex);
+    }
+
+    String formatLyrics(String rawLyrics) {
+        return rawLyrics.replace("\r", "").replaceAll("\\n+", "<br>").trim();
     }
 
     void setRestTemplate(RestTemplate restTemplate){
