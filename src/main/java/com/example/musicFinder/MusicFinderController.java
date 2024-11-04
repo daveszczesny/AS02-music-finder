@@ -66,16 +66,7 @@ public class MusicFinderController {
             String lyrics = getFormattedLyrics(artist, name);
             response.put("lyrics", lyrics);
             return ResponseEntity.ok(response); // Return 200 OK
-        } catch (HttpClientErrorException e){
-            if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
-                response.put("error", "API forbidden");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response); // Return 403 Forbidden
-            } else {
-                response.put("error", "Unknown http error");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-        }
-        catch (ArtistOrSongNotFoundException e) {
+        } catch (ArtistOrSongNotFoundException e) {
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Return 404 Not Found
         }
