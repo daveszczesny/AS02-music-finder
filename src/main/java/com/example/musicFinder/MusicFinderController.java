@@ -30,13 +30,13 @@ public class MusicFinderController {
     private String getFormattedLyrics(String artist, String song) throws ArtistOrSongNotFoundException {
         try {
 
-            String userInput = artist + "/" + song;
-
-            if(!isValidInput(userInput)) {
+            if(!isValidInput(artist, song)) {
                 throw new IllegalArgumentException("Invalid input");
             }
 
-            String apiUrl = API_ENDPOINT + artist + "/" + song;
+            String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
+                .pathSegment(artist, song)
+                .toUriString();
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
             JsonNode jsonNode = objectMapper.readTree(rawJson);
@@ -75,8 +75,9 @@ public class MusicFinderController {
     }
 
 
-    private boolean isValidInput(String input) {
+    private boolean isValidInput(String artist, String song) {
         // Check if the input contains only alphanumeric characters and spaces
-        return input.matches("^[a-zA-Z0-9\\s]+$");
+        String regex = "^[a-zA-Z0-9\\s]+$";
+        return artist.matches(regex) && song.matches(regex);
     }
 }
