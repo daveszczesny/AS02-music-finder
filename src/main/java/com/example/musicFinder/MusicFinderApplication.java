@@ -1,4 +1,4 @@
-package com.example.musicfinder;
+package com.example.musicFinder;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
