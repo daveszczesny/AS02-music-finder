@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -55,7 +56,9 @@ class MusicFinderApplicationTests {
 
 		// Mocking the API to return our lyrics
 
-		String apiUrl = API_ENDPOINT + artist + "/" + song;
+		String apiUrl = UriComponentsBuilder.fromHttpUrl(API_ENDPOINT)
+			.pathSegment(artist, song)
+			.toUriString();
 		when(restTemplate.getForObject(apiUrl, String.class)).thenReturn(rawLyrics);
 
 		// Call the controller method
