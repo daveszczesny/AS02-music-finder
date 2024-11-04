@@ -27,17 +27,19 @@ import com.example.musicfinder.MusicFinderController;
 @SpringBootTest
 class MusicFinderApplicationTests {
 
-	@InjectMocks
-	private MusicFinderController musicFinderController;
-
+	
 	@Mock
 	private RestTemplate restTemplate;
+
+	private MusicFinderController musicFinderController;
 
 	private static final String API_ENDPOINT = "https://api.lyrics.ovh/v1/";
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
+		musicFinderController = new MusicFinderController();
+		musicFinderController.setRestTemplate(restTemplate);
 	}
 
 	@Test

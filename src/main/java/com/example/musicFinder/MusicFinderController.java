@@ -18,7 +18,7 @@ import com.example.exception.ArtistOrSongNotFoundException;
 public class MusicFinderController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate = new RestTemplate();
 
     private static final String API_ENDPOINT = "https://api.lyrics.ovh/v1/";
     private static final String YOUTUBE_SEARCH_URL = "https://www.youtube.com/results?search_query=";
@@ -90,5 +90,9 @@ public class MusicFinderController {
         // Check if the input contains only alphanumeric characters and spaces
         String regex = "^[a-zA-Z0-9\\s]+$";
         return artist.matches(regex) && song.matches(regex);
+    }
+
+    void setRestTemplate(RestTemplate restTemplate){
+        this.restTemplate = restTemplate;
     }
 }
