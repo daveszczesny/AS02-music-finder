@@ -16,11 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.example.musicfinder.MusicFinderController;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import com.example.musicfinder.MusicFinderController;
 
 @SpringBootTest
 class MusicFinderApplicationTests {
@@ -60,7 +61,6 @@ class MusicFinderApplicationTests {
 		// Call the controller method
 		ResponseEntity<ObjectNode> responseEntity = musicFinderController.getSongDetails(artist, song);
 		ObjectNode response = responseEntity.getBody();
-
 		// Assert
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(artist, response.get("artist").asText());

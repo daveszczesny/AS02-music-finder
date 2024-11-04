@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -39,15 +40,16 @@ public class MusicFinderController {
                 .toUriString();
 
             String rawJson = restTemplate.getForObject(apiUrl, String.class);
+
             JsonNode jsonNode = objectMapper.readTree(rawJson);
             String rawLyrics = jsonNode.get("lyrics").asText();
             
-            String formattedLyrics = rawLyrics.replaceAll("\\r", "");
+            String formattedLyrics = rawLyrics.replace("\r", "");
             formattedLyrics = formattedLyrics.replaceAll("\\n+", "<br>");
 
             return formattedLyrics.trim();
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             throw new ArtistOrSongNotFoundException("Artist or song not found");
         }
     }
@@ -68,7 +70,16 @@ public class MusicFinderController {
             String lyrics = getFormattedLyrics(artist, name);
             response.put("lyrics", lyrics);
             return ResponseEntity.ok(response); // Return 200 OK
-        } catch (ArtistOrSongNotFoundException e) {
+        } catch (HttpClientErrorException e){
+            if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                response.put("error", "API forbidden");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response); // Return 403 Forbidden
+            } else {
+                response.put("error", "Some fucking error");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Return 404 Not Found
+            }
+        }
+        catch (ArtistOrSongNotFoundException e) {
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Return 404 Not Found
         }
