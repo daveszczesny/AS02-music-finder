@@ -8,9 +8,9 @@
         <version>3.3.3</version>
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>musicFinder</artifactId>
+    <artifactId>musicfinder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>musicFinder</name>
+    <name>musicfinder</name>
     <description>CT417 Sample application for Coursework Assessment</description>
 
     <properties>

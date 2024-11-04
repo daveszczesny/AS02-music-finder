@@ -1,4 +1,4 @@
-package com.example.musicFinder;
+package com.example.musicfinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

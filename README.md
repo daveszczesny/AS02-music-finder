@@ -105,7 +105,7 @@ Once the app is running, you can:
 musicFinder/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/musicFinder/   # Main Java code
+│   │   ├── java/com/example/musicfinder/   # Main Java code
 │   │   └── resources/                      # Application resources (HTML, static files)
 │   └── test/                               # Unit tests
 ├── mvnw                                    # Maven wrapper script for Unix/Linux
